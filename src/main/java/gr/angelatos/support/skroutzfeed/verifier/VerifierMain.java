@@ -62,10 +62,13 @@ public class VerifierMain {
 		String mpn = getTextValue(node, "MPN");
 		String title = getTextValue(node, "title");
 		if (!title.contains(mpn)) {
-			logError(error("0001"), title(node), id, "'"+title+"' does not have the MPN '"+mpn+"' in the text");
+			logError(error("0001"), title(node), id, mpn, "'"+title+"' does not have the MPN '"+mpn+"' in the text");
 		}
- 		
-	}
+ 		if (mpn.contains("+")) { //|| (mpn.contains(" "))) {
+			logError(error("0005"), title(node), id, mpn, "MPN '"+mpn+"' contains + in the code, it is not valid");
+
+ 		}
+ 	}
 
 	private final String getTextValue(Node parent, String tagName) {
 		return parent.query(tagName).get(0).getValue();
@@ -75,11 +78,11 @@ public class VerifierMain {
 	private void checkImage(String id, Node node) {
 		String imgUrl = getTextValue(node, "image");
 		if (imgUrl.contains(" ")) {
-			logError(error("0002"), title(node), id, "image has spaces in filename: "+imgUrl);
+			logError(error("0002"), title(node), id, getTextValue(node, "MPN"), "image has spaces in filename: "+imgUrl);
 		} else if (imgUrl.contains("?")) {
-			logError(error("0003"), title(node), id, "image has ? in filename: "+imgUrl);
+			logError(error("0003"), title(node), id, getTextValue(node, "MPN"), "image has ? in filename: "+imgUrl);
 		} else if (!imgUrl.startsWith("http")) {
-			logError(error("0004"), title(node), id, "image not http:// : "+imgUrl);
+			logError(error("0004"), title(node), id, getTextValue(node, "MPN"), "image not http:// : "+imgUrl);
 		} else {
 			//System.out.println("product '"+title(node)+"...' "+id+" img is OK: "+imgUrl);
 		}
@@ -96,8 +99,8 @@ public class VerifierMain {
 		return "";
 	}
 
-	private static void logError(String errorCode, String prodTitle, String id, String message) {
-		System.err.println("ERR-"+errorCode+" | '"+prodTitle+"' | "+id+" | "+message);
+	private static void logError(String errorCode, String prodTitle, String id, String MPN, String message) {
+		System.err.println("ERR-"+errorCode+" | '"+prodTitle+"' | "+id+" | "+MPN+" | "+message);
 	}
 	private String title(Node node) {
 		String value = getTextValue(node, "title");
@@ -110,7 +113,7 @@ public class VerifierMain {
 		{ "0002", "Η εικόνα του προϊοντος έχει κενά ή λάθος χαρακτήρες" },
 		{ "0003", "Η εικόνα έχει ???? στο όνομα ή στη διεύθυνση" },
 		{ "0004", "Η εικόνα δεν ξεκινά με http://" },
-		
+		{ "0005", "Το MPN εχει + μεσα στον κωδικο"}
 	};
 
 
