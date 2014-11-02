@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -22,7 +23,8 @@ public class VerifierMain {
 
 	private static final String DEFAULTFEED = "http://angelatos.gr/product_feed.php?type=skroutz";
 
-
+	HashMap<String, String[]> alternatives = new HashMap<String, String[]>();
+	
 	public static void main(String args[]) throws Exception {
 		VerifierMain m = new VerifierMain();
 		System.out.println("Feed verifier for Skroutz - http://angelatos.gr open source");
@@ -37,6 +39,11 @@ public class VerifierMain {
 		if (feed == null) {
 			feed = DEFAULTFEED;
 		}
+		
+		alternatives.put("id", new String[] {"UniqueID" } );
+		alternatives.put("MPN", new String[] { "mpn"  });
+		alternatives.put("title", new String[] { "name"  });
+		
 		System.out.println("About to verify the feed from "+feed);
 		try {
 			Builder parser = new Builder();
@@ -137,7 +144,14 @@ public class VerifierMain {
  	}
 
 	private final String getTextValue(Node parent, String tagName) {
-		return parent.query(tagName).get(0).getValue();
+		try {
+			return parent.query(tagName).get(0).getValue();
+		} catch (Exception e) {
+			if (alternatives.containsKey(tagName)) {
+				return getTextValue(parent, alternatives.get(tagName)[0]);
+			}
+		    return "";
+		}
 	}
 
 	
